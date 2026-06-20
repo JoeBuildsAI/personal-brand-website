@@ -1,0 +1,229 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    color-scheme: dark;
+  }
+
+  * {
+    border-color: theme("colors.hairline.DEFAULT");
+  }
+
+  html {
+    scroll-behavior: smooth;
+    -webkit-text-size-adjust: 100%;
+  }
+
+  body {
+    @apply bg-canvas text-ink antialiased;
+    font-feature-settings: "ss01", "cv01", "cv02";
+    text-rendering: optimizeLegibility;
+  }
+
+  ::selection {
+    background: rgba(104, 120, 242, 0.32);
+    color: #fff;
+  }
+
+  /* Focus ring */
+  :focus-visible {
+    outline: 2px solid theme("colors.brand.400");
+    outline-offset: 2px;
+    border-radius: 2px;
+  }
+
+  /* Scrollbar */
+  ::-webkit-scrollbar {
+    width: 10px;
+    height: 10px;
+  }
+  ::-webkit-scrollbar-track {
+    background: theme("colors.canvas.DEFAULT");
+  }
+  ::-webkit-scrollbar-thumb {
+    background: theme("colors.hairline.strong");
+    border-radius: 9999px;
+    border: 2px solid theme("colors.canvas.DEFAULT");
+  }
+  ::-webkit-scrollbar-thumb:hover {
+    background: #3a4255;
+  }
+}
+
+@layer components {
+  .container-px {
+    @apply px-5 sm:px-6 lg:px-8;
+  }
+
+  .hairline-x {
+    @apply border-t border-hairline;
+  }
+}
+
+@layer utilities {
+  /* Faint engineering grid */
+  .bg-grid {
+    background-image:
+      linear-gradient(to right, rgba(255, 255, 255, 0.035) 1px, transparent 1px),
+      linear-gradient(to bottom, rgba(255, 255, 255, 0.035) 1px, transparent 1px);
+    background-size: 56px 56px;
+  }
+
+  .bg-grid-sm {
+    background-image:
+      linear-gradient(to right, rgba(255, 255, 255, 0.04) 1px, transparent 1px),
+      linear-gradient(to bottom, rgba(255, 255, 255, 0.04) 1px, transparent 1px);
+    background-size: 28px 28px;
+  }
+
+  .bg-dots {
+    background-image: radial-gradient(rgba(255, 255, 255, 0.07) 1px, transparent 1px);
+    background-size: 22px 22px;
+  }
+
+  /* Edge fade masks */
+  .mask-radial {
+    -webkit-mask-image: radial-gradient(ellipse 75% 60% at 50% 0%, #000 35%, transparent 78%);
+    mask-image: radial-gradient(ellipse 75% 60% at 50% 0%, #000 35%, transparent 78%);
+  }
+
+  .mask-fade-b {
+    -webkit-mask-image: linear-gradient(to bottom, #000 55%, transparent 100%);
+    mask-image: linear-gradient(to bottom, #000 55%, transparent 100%);
+  }
+
+  .mask-fade-x {
+    -webkit-mask-image: linear-gradient(to right, transparent, #000 12%, #000 88%, transparent);
+    mask-image: linear-gradient(to right, transparent, #000 12%, #000 88%, transparent);
+  }
+
+  .text-balance {
+    text-wrap: balance;
+  }
+
+  .text-pretty {
+    text-wrap: pretty;
+  }
+
+  /* Premium text gradients */
+  .text-gradient {
+    background-image: linear-gradient(180deg, #ffffff 0%, #c4cadb 100%);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+  }
+
+  .text-gradient-brand {
+    background-image: linear-gradient(110deg, #ffffff 10%, #a3b2ff 55%, #5fe3ce 100%);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+  }
+
+  /* Hairline gradient border used on premium cards */
+  .border-gradient {
+    background:
+      linear-gradient(theme("colors.panel.DEFAULT"), theme("colors.panel.DEFAULT")) padding-box,
+      linear-gradient(140deg, rgba(255, 255, 255, 0.12), rgba(255, 255, 255, 0.02) 40%) border-box;
+    border: 1px solid transparent;
+  }
+
+  .glass {
+    background: rgba(12, 15, 24, 0.72);
+    backdrop-filter: blur(14px) saturate(140%);
+    -webkit-backdrop-filter: blur(14px) saturate(140%);
+  }
+
+  .glass-strong {
+    background: rgba(10, 12, 19, 0.82);
+    backdrop-filter: blur(22px) saturate(150%);
+    -webkit-backdrop-filter: blur(22px) saturate(150%);
+  }
+
+  .text-gradient-violet {
+    background-image: linear-gradient(110deg, #ffffff 8%, #c4b5fd 52%, #5fe3ce 100%);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+  }
+
+  .mask-fade-t {
+    -webkit-mask-image: linear-gradient(to top, #000 55%, transparent 100%);
+    mask-image: linear-gradient(to top, #000 55%, transparent 100%);
+  }
+
+  /* Left-to-right legibility scrim for the immersive hero overlay. */
+  .hero-scrim {
+    background: linear-gradient(
+      100deg,
+      rgba(6, 7, 12, 0.94) 0%,
+      rgba(6, 7, 12, 0.82) 28%,
+      rgba(6, 7, 12, 0.45) 52%,
+      rgba(6, 7, 12, 0) 72%
+    );
+  }
+
+  /* Bottom vignette to seat docked panels / scroll cues over the graph. */
+  .hero-vignette {
+    background: radial-gradient(
+        120% 80% at 50% 0%,
+        rgba(6, 7, 12, 0) 55%,
+        rgba(6, 7, 12, 0.55) 100%
+      ),
+      linear-gradient(to bottom, rgba(6, 7, 12, 0) 60%, rgba(6, 7, 12, 0.9) 100%);
+  }
+
+  /* Cinematic edge frame for the operating-layer graph: darkens all four
+     edges (vignette), adds a top scrim for HUD legibility and a bottom scrim
+     to seat the detail panel — without washing out the center. */
+  .graph-frame {
+    background:
+      radial-gradient(
+        125% 100% at 50% 46%,
+        rgba(6, 7, 12, 0) 46%,
+        rgba(6, 7, 12, 0.42) 73%,
+        rgba(6, 7, 12, 0.92) 100%
+      ),
+      linear-gradient(
+        to bottom,
+        rgba(6, 7, 12, 0.5) 0%,
+        rgba(6, 7, 12, 0) 16%,
+        rgba(6, 7, 12, 0) 64%,
+        rgba(6, 7, 12, 0.82) 100%
+      );
+  }
+
+  /* Deep-space base: layered radial light fields that give the void a sense of
+     volume and depth before the canvas atmosphere paints over it. */
+  .bg-deep-space {
+    background:
+      radial-gradient(120% 90% at 50% 12%, rgba(104, 120, 242, 0.12) 0%, rgba(6, 7, 12, 0) 55%),
+      radial-gradient(90% 80% at 82% 88%, rgba(95, 227, 206, 0.08) 0%, rgba(6, 7, 12, 0) 55%),
+      radial-gradient(90% 80% at 16% 82%, rgba(155, 135, 245, 0.09) 0%, rgba(6, 7, 12, 0) 55%),
+      radial-gradient(140% 120% at 50% 50%, rgba(8, 10, 18, 0) 40%, rgba(3, 4, 8, 0.85) 100%),
+      #04050a;
+  }
+
+  /* Faint blueprint cross-hair behind the core, screen-space, for spatial
+     orientation. Stays subtle and never competes with the nodes. */
+  .graph-reticle {
+    background-image:
+      linear-gradient(to right, rgba(129, 148, 255, 0.05) 1px, transparent 1px),
+      linear-gradient(to bottom, rgba(129, 148, 255, 0.05) 1px, transparent 1px);
+    background-size: 100% 100%;
+    background-position: center;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+    scroll-behavior: auto !important;
+  }
+}

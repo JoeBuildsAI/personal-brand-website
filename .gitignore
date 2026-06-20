@@ -5,3 +5,19 @@ dist
 .env.local
 coverage
 .vscode/settings.json
+
+# next.js
+/.next/
+/out/
+/build
+
+# typescript
+*.tsbuildinfo
+next-env.d.ts
+
+# misc
+.DS_Store
+*.pem
+npm-debug.log*
+yarn-error.log*
+yarn-debug.log*
