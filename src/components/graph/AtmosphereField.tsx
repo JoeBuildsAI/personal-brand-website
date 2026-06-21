@@ -54,9 +54,9 @@ const HUES: Array<[number, number, number]> = [
 ];
 
 const LAYERS = [
-  { depth: 0.12, count: 0.45, rMin: 0.5, rMax: 1.4, aMin: 0.12, aMax: 0.4, speed: 0.004 },
-  { depth: 0.32, count: 0.33, rMin: 0.7, rMax: 2.0, aMin: 0.18, aMax: 0.5, speed: 0.0075 },
-  { depth: 0.62, count: 0.22, rMin: 1.0, rMax: 3.0, aMin: 0.24, aMax: 0.62, speed: 0.013 },
+  { depth: 0.12, count: 0.5, rMin: 0.5, rMax: 1.5, aMin: 0.14, aMax: 0.5, speed: 0.004 },
+  { depth: 0.32, count: 0.38, rMin: 0.7, rMax: 2.1, aMin: 0.2, aMax: 0.62, speed: 0.0075 },
+  { depth: 0.62, count: 0.26, rMin: 1.0, rMax: 3.2, aMin: 0.26, aMax: 0.78, speed: 0.013 },
 ];
 
 /**
@@ -120,7 +120,7 @@ export function AtmosphereField({
         }
       }
       sparks.length = 0;
-      const sparkCount = Math.round(8 * density);
+      const sparkCount = Math.round(14 * density);
       for (let i = 0; i < sparkCount; i++) sparks.push(spawnSpark());
 
       // Distant systems — faint clusters biased toward the edges so the world
@@ -170,7 +170,7 @@ export function AtmosphereField({
         tx: fx + Math.cos(ang) * dist,
         ty: fy + Math.sin(ang) * dist,
         t: Math.random(),
-        speed: rand(0.06, 0.16),
+        speed: rand(0.08, 0.2),
         hue,
       };
     }
@@ -245,7 +245,7 @@ export function AtmosphereField({
           const dy = ay - by;
           const d2 = dx * dx + dy * dy;
           if (d2 > thresh * thresh) continue;
-          const alpha = (1 - Math.sqrt(d2) / thresh) * 0.05;
+          const alpha = (1 - Math.sqrt(d2) / thresh) * 0.075;
           ctx.strokeStyle = `rgba(129,148,255,${alpha})`;
           ctx.beginPath();
           ctx.moveTo(ax, ay);
@@ -282,12 +282,12 @@ export function AtmosphereField({
         const sy = mod((s.fy + (s.ty - s.fy) * s.t) * H + offFarY, H);
         const fade = Math.sin(Math.min(1, s.t) * Math.PI);
         const [r, g, b] = s.hue;
-        const glow = ctx.createRadialGradient(sx, sy, 0, sx, sy, 7);
-        glow.addColorStop(0, `rgba(${r},${g},${b},${0.6 * fade})`);
+        const glow = ctx.createRadialGradient(sx, sy, 0, sx, sy, 9);
+        glow.addColorStop(0, `rgba(${r},${g},${b},${0.78 * fade})`);
         glow.addColorStop(1, `rgba(${r},${g},${b},0)`);
         ctx.fillStyle = glow;
         ctx.beginPath();
-        ctx.arc(sx, sy, 7, 0, Math.PI * 2);
+        ctx.arc(sx, sy, 9, 0, Math.PI * 2);
         ctx.fill();
         ctx.fillStyle = `rgba(235,240,255,${0.9 * fade})`;
         ctx.beginPath();

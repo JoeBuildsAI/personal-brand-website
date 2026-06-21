@@ -21,7 +21,6 @@ export const siteConfig = {
   social: {
     github: "https://github.com/joewilkinson",
     linkedin: "https://www.linkedin.com/in/joewilkinson",
-    instagram: "https://www.instagram.com/joewilkinson",
   },
 } as const;
 

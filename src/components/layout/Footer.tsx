@@ -1,14 +1,13 @@
 import Link from "next/link";
 import { Container } from "@/components/ui/Container";
 import { siteConfig } from "@/lib/site";
-import { Github, Instagram, Linkedin, Mail } from "@/components/ui/icons";
+import { Github, Linkedin, Mail } from "@/components/ui/icons";
 
 // Filter out any social handle left blank in site config so it disappears
 // everywhere automatically.
 const socialLinks = [
   { label: "GitHub", href: siteConfig.social.github, Icon: Github },
   { label: "LinkedIn", href: siteConfig.social.linkedin, Icon: Linkedin },
-  { label: "Instagram", href: siteConfig.social.instagram, Icon: Instagram },
   { label: "Email", href: `mailto:${siteConfig.email}`, Icon: Mail },
 ].filter((item) => item.href && !item.href.endsWith("mailto:"));
 
@@ -35,7 +34,6 @@ const footerNav: { heading: string; links: { label: string; href: string }[] }[]
       { label: "Contact", href: "/contact" },
       { label: "GitHub", href: siteConfig.social.github },
       { label: "LinkedIn", href: siteConfig.social.linkedin },
-      { label: "Instagram", href: siteConfig.social.instagram },
     ].filter((link) => link.href),
   },
 ];

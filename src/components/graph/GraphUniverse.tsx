@@ -177,15 +177,18 @@ export function GraphUniverse() {
     (id: string): Rect => {
       const { w: W, h: H } = sizeRef.current;
       const aspect = W / H;
+      // Mobile gets its own framing preset: much wider so the world reads as
+      // massive and no giant cropped lines dominate the small viewport.
+      const isMobile = W < 768;
       const node = model.byId.get(id) ?? model.root;
 
-      // Root view: deliberately do NOT fit the whole graph. Start zoomed into
-      // the core so the universe extends far beyond the viewport on every side
-      // — you can never see all of it at once.
+      // Root view: deliberately do NOT fit the whole graph. Start zoomed out
+      // enough for a cinematic establishing shot — the universe still extends
+      // beyond the viewport on every side.
       if (id === model.root.id) {
         const dn = model.nodes.find((n) => n.level === 2);
         const base = dn ? Math.hypot(dn.x, dn.y) : 1020;
-        const cw = base * 1.6;
+        const cw = base * (isMobile ? 3.3 : 2.05);
         const ch = cw / aspect;
         return { x: -cw / 2, y: -ch / 2, w: cw, h: ch };
       }
@@ -194,9 +197,10 @@ export function GraphUniverse() {
       const cx = (b.minX + b.maxX) / 2;
       const cy = (b.minY + b.maxY) / 2;
       const pad = node.level >= 4 ? 3.2 : node.level === 3 ? 2.1 : 1.6;
-      let cw = (b.maxX - b.minX) * pad;
-      let ch = (b.maxY - b.minY) * pad;
-      const minW = node.level >= 4 ? 680 : node.level === 3 ? 1040 : 1640;
+      const mobileMul = isMobile ? 1.5 : 1;
+      let cw = (b.maxX - b.minX) * pad * mobileMul;
+      let ch = (b.maxY - b.minY) * pad * mobileMul;
+      const minW = (node.level >= 4 ? 680 : node.level === 3 ? 1040 : 1640) * mobileMul;
       cw = Math.max(cw, minW);
       ch = Math.max(ch, minW / aspect);
       if (cw / ch < aspect) cw = ch * aspect;
@@ -796,7 +800,10 @@ export function GraphUniverse() {
                         !reduce && "animate-pulse-node",
                       )}
                     />
-                    <span className="relative h-6 w-6 rounded-full bg-gradient-to-br from-brand-100 via-brand-300 to-accent shadow-node ring-2 ring-white/50" />
+                    <span
+                      className="relative h-6 w-6 rounded-full bg-gradient-to-br from-brand-100 via-brand-300 to-accent shadow-node ring-2 ring-white/50"
+                      style={{ boxShadow: "0 0 28px rgba(129,148,255,0.7), 0 0 10px rgba(255,255,255,0.5)" }}
+                    />
                   </>
                 ) : node.kind === "domain" ? (
                   <>
@@ -841,6 +848,9 @@ export function GraphUniverse() {
                         "relative h-7 w-7 rounded-full shadow-node ring-1 ring-white/50",
                         dotBg[node.tone],
                       )}
+                      style={{
+                        boxShadow: `0 0 ${emphasized ? 34 : 22}px rgba(${toneRGB[node.tone]},${emphasized ? 0.8 : 0.5})`,
+                      }}
                     />
                   </>
                 ) : (
@@ -1053,7 +1063,8 @@ export function GraphUniverse() {
         >
           <div
             className={cn(
-              "glass-strong relative w-full max-w-lg overflow-hidden rounded-3xl border border-hairline px-8 py-10 text-center shadow-card sm:px-12 sm:py-12",
+              "glass-strong relative w-full max-w-xl overflow-hidden rounded-[28px] border border-brand-300/20 px-9 py-12 text-center sm:px-14 sm:py-16",
+              "shadow-[0_40px_140px_-24px_rgba(8,11,32,0.95),0_0_70px_-12px_rgba(129,148,255,0.4)]",
               "transition-[transform,opacity] ease-out",
               reduce ? "duration-500" : "duration-[800ms]",
               entered
@@ -1061,30 +1072,38 @@ export function GraphUniverse() {
                 : "translate-y-0 scale-100 opacity-100",
             )}
           >
+            {/* Inner bloom for depth */}
             <span
               aria-hidden
-              className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-brand-300/70 to-transparent"
+              className="pointer-events-none absolute inset-0"
+              style={{
+                background:
+                  "radial-gradient(130% 90% at 50% -10%, rgba(129,148,255,0.22), transparent 58%)",
+              }}
             />
-            <p className="font-mono text-2xs uppercase tracking-[0.34em] text-accent/80">
+            <span
+              aria-hidden
+              className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-brand-300/80 to-transparent"
+            />
+            <p className="relative font-mono text-2xs uppercase tracking-[0.36em] text-accent/80">
               Systems Operating Layer
             </p>
-            <p className="mt-5 text-balance text-2xl font-semibold leading-tight tracking-tight text-ink sm:text-3xl">
+            <p className="relative mt-6 text-balance text-3xl font-semibold leading-[1.1] tracking-tight text-ink sm:text-4xl">
               I build systems that turn chaos into infrastructure.
             </p>
-            <p className="mx-auto mt-4 max-w-md text-pretty text-sm leading-relaxed text-ink-muted">
-              Explore the work as a living map of products, projects, case
-              studies, services, and ideas.
+            <p className="relative mx-auto mt-5 max-w-md text-pretty text-base leading-relaxed text-ink-muted">
+              Explore the operating layer behind my work.
             </p>
             <button
               type="button"
               onClick={dismiss}
-              className="group mt-8 inline-flex items-center gap-2 rounded-full border border-brand-400/40 bg-brand-500/15 px-6 py-3 text-sm font-medium text-brand-100 shadow-node outline-none backdrop-blur transition-colors hover:border-brand-300/70 hover:bg-brand-500/25 focus-visible:ring-2 focus-visible:ring-brand-400/70"
+              className="group relative mt-9 inline-flex items-center gap-2 rounded-full border border-brand-400/50 bg-brand-500/20 px-8 py-3.5 text-sm font-semibold uppercase tracking-[0.14em] text-brand-50 shadow-node outline-none backdrop-blur transition-all hover:border-brand-300/80 hover:bg-brand-500/30 focus-visible:ring-2 focus-visible:ring-brand-400/70"
             >
-              Enter the operating layer
+              Enter Site
               <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-0.5" />
             </button>
-            <p className="mt-5 font-mono text-2xs uppercase tracking-[0.18em] text-ink-subtle">
-              Move through the system. Follow the signal.
+            <p className="relative mt-6 font-mono text-2xs uppercase tracking-[0.2em] text-ink-subtle">
+              Continue into the system.
             </p>
           </div>
         </div>

@@ -102,7 +102,7 @@ const config: Config = {
           to: { opacity: "1" },
         },
         "pulse-node": {
-          "0%, 100%": { opacity: "0.35" },
+          "0%, 100%": { opacity: "0.3" },
           "50%": { opacity: "1" },
         },
         "dash-flow": {
@@ -126,15 +126,15 @@ const config: Config = {
           "50%": { opacity: "0.85", transform: "translate3d(0,-2%,0) scale(1.05)" },
         },
         "core-pulse": {
-          "0%, 100%": { opacity: "0.45", transform: "scale(1)" },
-          "50%": { opacity: "0.85", transform: "scale(1.06)" },
+          "0%, 100%": { opacity: "0.5", transform: "scale(1)" },
+          "50%": { opacity: "1", transform: "scale(1.12)" },
         },
         "stream-flow": {
           to: { strokeDashoffset: "-220" },
         },
         breathe: {
-          "0%, 100%": { transform: "scale(1)", opacity: "0.55" },
-          "50%": { transform: "scale(1.14)", opacity: "0.9" },
+          "0%, 100%": { transform: "scale(1)", opacity: "0.6" },
+          "50%": { transform: "scale(1.22)", opacity: "1" },
         },
         "glow-pulse": {
           "0%, 100%": { opacity: "0.4" },
@@ -153,14 +153,14 @@ const config: Config = {
       animation: {
         "fade-up": "fade-up 0.7s cubic-bezier(0.22,1,0.36,1) both",
         "fade-in": "fade-in 0.9s ease-out both",
-        "pulse-node": "pulse-node 4.5s ease-in-out infinite",
+        "pulse-node": "pulse-node 3.2s ease-in-out infinite",
         "dash-flow": "dash-flow 18s linear infinite",
         "trace-flow": "trace-flow 1.2s linear infinite",
         "spin-slow": "spin-slow 32s linear infinite",
         "aurora-shift": "aurora-shift 14s ease-in-out infinite",
-        "core-pulse": "core-pulse 7s ease-in-out infinite",
-        "stream-flow": "stream-flow 9s linear infinite",
-        breathe: "breathe 6.5s ease-in-out infinite",
+        "core-pulse": "core-pulse 5s ease-in-out infinite",
+        "stream-flow": "stream-flow 5.5s linear infinite",
+        breathe: "breathe 5.2s ease-in-out infinite",
         "glow-pulse": "glow-pulse 5s ease-in-out infinite",
         float: "float 7s ease-in-out infinite",
         ignite: "ignite 1.5s cubic-bezier(0.22,1,0.36,1) forwards",

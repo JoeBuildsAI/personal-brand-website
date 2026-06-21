@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import { PageShell } from "@/components/layout/PageShell";
 import { Card } from "@/components/ui/Card";
 import { ContactForm } from "@/components/sections/ContactForm";
-import { ArrowUpRight, Github, Instagram, Linkedin, Mail } from "@/components/ui/icons";
+import { ArrowUpRight, Github, Linkedin, Mail } from "@/components/ui/icons";
 import { siteConfig } from "@/lib/site";
 
 export const metadata: Metadata = {
@@ -38,12 +38,6 @@ const directLinks = [
     value: "See the code",
     href: siteConfig.social.github,
     icon: Github,
-  },
-  {
-    label: "Instagram",
-    value: "Follow along",
-    href: siteConfig.social.instagram,
-    icon: Instagram,
   },
 ].filter((link) => link.href && link.href !== "mailto:");
 

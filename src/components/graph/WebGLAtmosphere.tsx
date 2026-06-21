@@ -254,7 +254,7 @@ export function WebGLAtmosphere({
         uniforms: {
           tScene: { value: null },
           tBloom: { value: null },
-          uBloom: { value: 1.4 },
+          uBloom: { value: 1.65 },
         },
       }),
     });
@@ -319,7 +319,7 @@ export function WebGLAtmosphere({
       composite.program.uniforms.tBloom.value = bloomEnabled
         ? bloomA.texture
         : sceneRT.texture;
-      composite.program.uniforms.uBloom.value = bloomEnabled ? 1.4 : 0.0;
+      composite.program.uniforms.uBloom.value = bloomEnabled ? 1.65 : 0.0;
       renderer.render({ scene: composite, clear: true });
     };
 
