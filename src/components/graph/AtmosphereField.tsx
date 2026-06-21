@@ -54,9 +54,10 @@ const HUES: Array<[number, number, number]> = [
 ];
 
 const LAYERS = [
-  { depth: 0.12, count: 0.5, rMin: 0.5, rMax: 1.5, aMin: 0.14, aMax: 0.5, speed: 0.004 },
-  { depth: 0.32, count: 0.38, rMin: 0.7, rMax: 2.1, aMin: 0.2, aMax: 0.62, speed: 0.0075 },
-  { depth: 0.62, count: 0.26, rMin: 1.0, rMax: 3.2, aMin: 0.26, aMax: 0.78, speed: 0.013 },
+  { depth: 0.1, count: 0.5, rMin: 0.5, rMax: 1.5, aMin: 0.14, aMax: 0.5, speed: 0.004 },
+  { depth: 0.28, count: 0.44, rMin: 0.7, rMax: 2.1, aMin: 0.2, aMax: 0.64, speed: 0.0075 },
+  { depth: 0.5, count: 0.32, rMin: 1.0, rMax: 3.0, aMin: 0.26, aMax: 0.8, speed: 0.012 },
+  { depth: 0.78, count: 0.18, rMin: 1.4, rMax: 4.2, aMin: 0.28, aMax: 0.88, speed: 0.018 },
 ];
 
 /**
@@ -120,13 +121,13 @@ export function AtmosphereField({
         }
       }
       sparks.length = 0;
-      const sparkCount = Math.round(14 * density);
+      const sparkCount = Math.round(22 * density);
       for (let i = 0; i < sparkCount; i++) sparks.push(spawnSpark());
 
       // Distant systems — faint clusters biased toward the edges so the world
       // reads as far larger than the viewport (partial objects beyond frame).
       clusters.length = 0;
-      for (let i = 0; i < 10; i++) {
+      for (let i = 0; i < 16; i++) {
         const onLeft = Math.random() < 0.5;
         const cx = onLeft ? rand(-0.14, 0.16) : rand(0.84, 1.14);
         const cy = rand(-0.12, 1.12);
@@ -199,6 +200,8 @@ export function AtmosphereField({
         { cx: 0.55 + Math.sin(time * 0.00004) * 0.06, cy: 0.48 + Math.cos(time * 0.00007) * 0.06, hue: HUES[2], a: 0.17, r: 0.8 },
         { cx: 0.5 + Math.cos(time * 0.00003) * 0.05, cy: 0.12 + Math.sin(time * 0.00006) * 0.04, hue: HUES[0], a: 0.14, r: 0.56 },
         { cx: 0.16 + Math.sin(time * 0.00005) * 0.05, cy: 0.82 + Math.cos(time * 0.00004) * 0.05, hue: HUES[1], a: 0.12, r: 0.6 },
+        { cx: 0.84 + Math.sin(time * 0.00009) * 0.06, cy: 0.22 + Math.cos(time * 0.00006) * 0.05, hue: HUES[2], a: 0.13, r: 0.5 },
+        { cx: 0.38 + Math.cos(time * 0.00008) * 0.07, cy: 0.78 + Math.sin(time * 0.00005) * 0.06, hue: HUES[0], a: 0.12, r: 0.62 },
       ];
       ctx.globalCompositeOperation = "lighter";
       for (const b of blobs) {
@@ -299,10 +302,12 @@ export function AtmosphereField({
 
     const drawEvents = (time: number, animate: boolean, dt: number) => {
       if (animate) {
-        if (nextEvent === 0) nextEvent = time + rand(7000, 16000);
+        if (nextEvent === 0) nextEvent = time + rand(3000, 8000);
         if (time >= nextEvent) {
           spawnPulse();
-          nextEvent = time + rand(20000, 60000);
+          // Occasionally fire a second pulse for layered, overlapping waves.
+          if (Math.random() < 0.35) spawnPulse();
+          nextEvent = time + rand(9000, 22000);
         }
       }
       if (pulses.length === 0) return;

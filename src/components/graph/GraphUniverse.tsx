@@ -182,13 +182,26 @@ export function GraphUniverse() {
       const isMobile = W < 768;
       const node = model.byId.get(id) ?? model.root;
 
-      // Root view: deliberately do NOT fit the whole graph. Start zoomed out
-      // enough for a cinematic establishing shot — the universe still extends
-      // beyond the viewport on every side.
+      // Root view — two distinct presets:
+      //  • Entry (card visible): a wide establishing shot that frames the CORE
+      //    and the full domain ring so the broader composition reads clearly
+      //    behind the entry card.
+      //  • Entered: a tighter, more immersive root view to travel from.
       if (id === model.root.id) {
         const dn = model.nodes.find((n) => n.level === 2);
-        const base = dn ? Math.hypot(dn.x, dn.y) : 1020;
-        const cw = base * (isMobile ? 3.3 : 2.05);
+        const base = dn ? Math.hypot(dn.x, dn.y) : 1320;
+        if (!enteredRef.current) {
+          // Fit a square of half-extent R (≈ the domain ring) into the viewport,
+          // expanding the longer axis — correct for landscape AND portrait, so
+          // mobile zooms out further and never shows giant cropped lines.
+          const R = base * (isMobile ? 1.5 : 1.04);
+          let cw = 2 * R;
+          let ch = 2 * R;
+          if (cw / ch < aspect) cw = ch * aspect;
+          else ch = cw / aspect;
+          return { x: -cw / 2, y: -ch / 2, w: cw, h: ch };
+        }
+        const cw = base * (isMobile ? 3.0 : 2.05);
         const ch = cw / aspect;
         return { x: -cw / 2, y: -ch / 2, w: cw, h: ch };
       }
@@ -367,6 +380,14 @@ export function GraphUniverse() {
       if (arriveTimer.current) window.clearTimeout(arriveTimer.current);
     };
   }, [focusId, cameraForNode, flyTo]);
+
+  // On enter at the root, settle from the wide entry composition into the
+  // tighter immersive root view (distinct framing for entry vs entered).
+  useEffect(() => {
+    if (!entered) return;
+    if (focusId !== model.root.id) return;
+    flyTo(cameraForNode(model.root.id));
+  }, [entered, focusId, model.root.id, cameraForNode, flyTo]);
 
   // Pause the loop when the tab is hidden; resume on return. Always cancel on
   // unmount to avoid leaking an animation frame.
