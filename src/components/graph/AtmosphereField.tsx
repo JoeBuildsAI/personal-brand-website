@@ -32,6 +32,18 @@ type Cluster = {
   depth: number;
   hue: [number, number, number];
   dots: Array<{ x: number; y: number; r: number }>; // offsets in normalized units
+  act: number; // activation energy 0..1 (decays over time)
+  ring: number; // awakening ring elapsed ms; RING_OFF when inactive
+};
+
+// An autonomous data packet travelling between two distant hubs (clusters).
+type Packet = {
+  a: number; // from cluster index
+  b: number; // to cluster index
+  t: number; // 0..1 progress
+  speed: number; // progress per second
+  hue: [number, number, number];
+  hops: number; // propagation depth
 };
 
 // Rare environmental events: a pulse wave that crosses the network with an
@@ -93,7 +105,16 @@ export function AtmosphereField({
     const sparks: Spark[] = [];
     const clusters: Cluster[] = [];
     const pulses: Pulse[] = [];
+    const packets: Packet[] = [];
     let nextEvent = 0;
+    // Autonomous "system" schedulers: the network behaves on its own so the
+    // scene feels like a massive system operating even when idle.
+    let nextPacket = 0;
+    let nextAwake = 0;
+    let nextSync = 0;
+    const RING_OFF = Number.POSITIVE_INFINITY;
+    const RING_DUR = 1700;
+    const KSYS = 130;
 
     const rand = (a: number, b: number) => a + Math.random() * (b - a);
 
@@ -144,6 +165,8 @@ export function AtmosphereField({
           depth: rand(0.07, 0.18),
           hue: HUES[Math.floor(Math.random() * 3)],
           dots,
+          act: 0,
+          ring: RING_OFF,
         });
       }
     };
@@ -158,6 +181,142 @@ export function AtmosphereField({
         hue: HUES[Math.floor(Math.random() * 3)],
       });
     }
+
+    const clusterPos = (cl: Cluster, par: Parallax) => ({
+      x: cl.x * W + par.x * cl.depth * KSYS,
+      y: cl.y * H + par.y * cl.depth * KSYS,
+    });
+
+    const randCluster = () => Math.floor(Math.random() * clusters.length);
+
+    function emitPacket(from: number, hops = 0) {
+      if (clusters.length < 2 || packets.length > 18) return;
+      let to = randCluster();
+      if (to === from) to = (to + 1) % clusters.length;
+      packets.push({
+        a: from,
+        b: to,
+        t: 0,
+        speed: rand(0.22, 0.46),
+        hue: clusters[from].hue,
+        hops,
+      });
+    }
+
+    // A distant hub awakens: it brightens, fires an expanding ring, and routes
+    // a few packets out to neighbours (pathway energy propagation).
+    function awaken(i: number) {
+      const cl = clusters[i];
+      if (!cl) return;
+      cl.act = 1;
+      cl.ring = 0;
+      const fanout = 1 + Math.floor(Math.random() * 3);
+      for (let k = 0; k < fanout; k++) emitPacket(i);
+    }
+
+    // Network synchronization: a cascade of awakenings and overlapping waves.
+    function synchronize() {
+      const n = Math.min(8, clusters.length);
+      for (let k = 0; k < n; k++) {
+        const idx = randCluster();
+        clusters[idx].act = Math.max(clusters[idx].act, 0.85);
+        clusters[idx].ring = -k * 80; // staggered ring ignition
+        if (Math.random() < 0.5) emitPacket(idx);
+      }
+      spawnPulse();
+      if (Math.random() < 0.6) spawnPulse();
+    }
+
+    const updateSystem = (time: number, animate: boolean, dt: number) => {
+      if (animate) {
+        if (nextAwake === 0) nextAwake = time + rand(1800, 4200);
+        if (time >= nextAwake) {
+          awaken(randCluster());
+          nextAwake = time + rand(4500, 10000);
+        }
+        if (nextPacket === 0) nextPacket = time + rand(1200, 3000);
+        if (time >= nextPacket) {
+          emitPacket(randCluster());
+          nextPacket = time + rand(2200, 5200);
+        }
+        if (nextSync === 0) nextSync = time + rand(22000, 40000);
+        if (time >= nextSync) {
+          synchronize();
+          nextSync = time + rand(38000, 80000);
+        }
+      }
+      for (let i = packets.length - 1; i >= 0; i--) {
+        const pk = packets[i];
+        if (animate) pk.t += (pk.speed * dt) / 1000;
+        if (pk.t >= 1) {
+          const target = clusters[pk.b];
+          if (target) {
+            target.act = 1;
+            target.ring = 0;
+          }
+          // Pathway propagation: a chance the signal continues onward.
+          if (pk.hops < 2 && Math.random() < 0.5) emitPacket(pk.b, pk.hops + 1);
+          packets.splice(i, 1);
+        }
+      }
+      for (const cl of clusters) {
+        if (cl.act > 0) cl.act = Math.max(0, cl.act - dt / 2400);
+        if (cl.ring !== RING_OFF) {
+          cl.ring += dt;
+          if (cl.ring > RING_DUR) cl.ring = RING_OFF;
+        }
+      }
+    };
+
+    const drawSystem = (par: Parallax) => {
+      const maxR = Math.max(W, H);
+      ctx.globalCompositeOperation = "lighter";
+      // Awakening rings around recently activated hubs.
+      for (const cl of clusters) {
+        if (cl.ring === RING_OFF || cl.ring < 0) continue;
+        const prog = cl.ring / RING_DUR;
+        const p = clusterPos(cl, par);
+        const rad = prog * maxR * 0.15;
+        const fade = Math.sin(prog * Math.PI);
+        const [r, g, b] = cl.hue;
+        ctx.strokeStyle = `rgba(${r},${g},${b},${0.35 * fade})`;
+        ctx.lineWidth = 1.6 * (1 - prog) + 0.5;
+        ctx.beginPath();
+        ctx.arc(p.x, p.y, rad, 0, Math.PI * 2);
+        ctx.stroke();
+      }
+      // Packets racing hub-to-hub, brightening their pathway as they go.
+      for (const pk of packets) {
+        const a = clusters[pk.a];
+        const b = clusters[pk.b];
+        if (!a || !b) continue;
+        const pa = clusterPos(a, par);
+        const pb = clusterPos(b, par);
+        const x = pa.x + (pb.x - pa.x) * pk.t;
+        const y = pa.y + (pb.y - pa.y) * pk.t;
+        const [r, g, b2] = pk.hue;
+        const fade = Math.sin(Math.min(1, pk.t) * Math.PI) * 0.6 + 0.4;
+        ctx.strokeStyle = `rgba(${r},${g},${b2},${0.05 + 0.06 * fade})`;
+        ctx.lineWidth = 0.7;
+        ctx.beginPath();
+        ctx.moveTo(pa.x, pa.y);
+        ctx.lineTo(pb.x, pb.y);
+        ctx.stroke();
+        const gr = 7;
+        const glow = ctx.createRadialGradient(x, y, 0, x, y, gr);
+        glow.addColorStop(0, `rgba(${r},${g},${b2},${0.75 * fade})`);
+        glow.addColorStop(1, `rgba(${r},${g},${b2},0)`);
+        ctx.fillStyle = glow;
+        ctx.beginPath();
+        ctx.arc(x, y, gr, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.fillStyle = `rgba(240,244,255,${0.9 * fade})`;
+        ctx.beginPath();
+        ctx.arc(x, y, 1.3, 0, Math.PI * 2);
+        ctx.fill();
+      }
+      ctx.globalCompositeOperation = "source-over";
+    };
 
     function spawnSpark(): Spark {
       const fx = Math.random();
@@ -226,8 +385,10 @@ export function AtmosphereField({
       const par = parallaxRef?.current ?? { x: 0, y: 0 };
       const K = 130;
 
+      updateSystem(time, animate, dt);
       drawFog(time);
       drawArchitecture(time, par);
+      drawSystem(par);
       drawEvents(time, animate, dt);
 
       // Far-field neural filaments (first/farthest layer only).
@@ -387,13 +548,13 @@ export function AtmosphereField({
         const bx = cl.x * W + par.x * cl.depth * K;
         const by = cl.y * H + par.y * cl.depth * K;
         const [r, g, b] = cl.hue;
-        const gr = maxR * 0.13;
+        const gr = maxR * (0.13 + cl.act * 0.05);
         const glow = ctx.createRadialGradient(bx, by, 0, bx, by, gr);
-        glow.addColorStop(0, `rgba(${r},${g},${b},0.1)`);
+        glow.addColorStop(0, `rgba(${r},${g},${b},${0.1 + cl.act * 0.55})`);
         glow.addColorStop(1, `rgba(${r},${g},${b},0)`);
         ctx.fillStyle = glow;
         ctx.fillRect(bx - gr, by - gr, gr * 2, gr * 2);
-        ctx.strokeStyle = `rgba(${r},${g},${b},0.07)`;
+        ctx.strokeStyle = `rgba(${r},${g},${b},${0.07 + cl.act * 0.4})`;
         ctx.lineWidth = 0.6;
         const ox = bx + cl.dots[0].x * W;
         const oy = by + cl.dots[0].y * H;
@@ -407,9 +568,9 @@ export function AtmosphereField({
             ctx.lineTo(dx, dy);
             ctx.stroke();
           }
-          ctx.fillStyle = `rgba(${r},${g},${b},0.32)`;
+          ctx.fillStyle = `rgba(${r},${g},${b},${0.32 + cl.act * 0.55})`;
           ctx.beginPath();
-          ctx.arc(dx, dy, d.r, 0, Math.PI * 2);
+          ctx.arc(dx, dy, d.r * (1 + cl.act * 0.6), 0, Math.PI * 2);
           ctx.fill();
         }
       }

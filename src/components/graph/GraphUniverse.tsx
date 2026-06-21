@@ -194,7 +194,7 @@ export function GraphUniverse() {
           // Fit a square of half-extent R (≈ the domain ring) into the viewport,
           // expanding the longer axis — correct for landscape AND portrait, so
           // mobile zooms out further and never shows giant cropped lines.
-          const R = base * (isMobile ? 1.5 : 1.04);
+          const R = base * (isMobile ? 2.1 : 1.6);
           let cw = 2 * R;
           let ch = 2 * R;
           if (cw / ch < aspect) cw = ch * aspect;
